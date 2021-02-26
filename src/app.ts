@@ -1,7 +1,10 @@
+
+/// <reference path="../vendor/babylon.d.ts" />
+
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, Mesh, MeshBuilder } from "@babylonjs/core";
+import { Engine, Scene, SceneLoader, ArcRotateCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, StandardMaterial, Color3, Space } from "@babylonjs/core";
 
 class App {
     constructor() {
@@ -18,6 +21,33 @@ class App {
         camera.attachControl(canvas, true);
         var light1: HemisphericLight = new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
         var sphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 1 }, scene);
+
+		// load mesh
+
+        const url = "./models/"
+        const fileName = "ancient-cube.glb"
+        
+        var material = new StandardMaterial("red", scene)
+        material.diffuseColor = Color3.Red()
+
+        var mesh
+        SceneLoader.ImportMesh("", url, fileName, scene, (loaded) => {        
+            mesh = loaded[0].getChildMeshes()[0]
+            mesh.position.copyFromFloats(0, 1, 0)
+            mesh.scaling.copyFromFloats(0.1,0.1, 0.1)
+            mesh.material = material
+
+            camera.target = mesh.position;
+            console.log(mesh)
+        })
+    
+        //
+
+        
+        const rotate = function() {
+            mesh?.rotate(new Vector3(-1, 1, -1), 7 * Math.PI / 12, Space.LOCAL);
+        }
+    
         // hide/show the Inspector
         window.addEventListener("keydown", (ev) => {
             // Shift+Ctrl+Alt+I
@@ -31,6 +61,9 @@ class App {
         });
         // run the main render loop
         engine.runRenderLoop(() => {
+
+            rotate();
+
             scene.render();
         });
     }
